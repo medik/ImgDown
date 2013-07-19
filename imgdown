@@ -47,9 +47,9 @@ Trollop::die :link, "must exist" if opts[:link] == "" || opts[:link] == nil
 # f_names.push(filen_extract(fname))
 # end
 
-def filen_extract(uri)
-	uri =~ /^.*\/(.*)\.(.*)$/
-	if uri == "" or uri == nil then
+def urlToFilename(url)
+	url =~ /^.*\/(.*)\.(.*)$/
+	if url == "" or url == nil then
 		return ""
 	else
 		return "#{$1}.#{$2}"
@@ -98,7 +98,7 @@ end
 
 def downl_f(file_uri, downl_path)
 	puts "Downloading #{file_uri}..."
-	_file_h = open("#{downl_path}/#{filen_extract(file_uri)}", "wb")
+	_file_h = open("#{downl_path}/#{urlToFilename(file_uri)}", "wb")
 	_file_h.write(open(file_uri).read)
 	_file_h.close
 end
@@ -107,12 +107,12 @@ end
 def downl_all(array_w_links, dwl_path)
 	puts "Downloading..."
 
-	f_names = Dir["#{dwl_path}/*"].map { |path| filen_extract(path) }
+	f_names = Dir["#{dwl_path}/*"].map { |path| urlToFilename(path) }
 	
 	array_w_links.each do |url|
         if opts[:overwrite] == true then
             downl_f(url, dwl_path)
-        elsif if_doublet(filen_extract(url), f_names) != true then
+        elsif if_doublet(urlToFilename(url), f_names) != true then
 			downl_f(url, dwl_path)
 		end
 	end
