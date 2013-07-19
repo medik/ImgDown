@@ -37,7 +37,7 @@ EOS
 	opt :reg_ex, "Use this tag to define a regular expression.", :short => 'r', :type => String, :default => "(.*)" # TODO: How does the regex for this program work.
 	opt :link, "Link to the page that you want to download images from.", :short => 'l', :type => String
 	opt :destination, "This defines the folder you want to download images to.", :short => 't', :type => String, :default => Dir.pwd
-	opt :user_agent, "If you want to specify a user-agent.", :short => 's', :type => String
+	opt :user_agent, "Use this tag if you want to specify a user-agent.", :short => 's', :type => String
     	opt :overwrite, "If you want to overwrite existing files with the same name", :short => 'i', :default => false 
 end
 
