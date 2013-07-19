@@ -24,7 +24,7 @@ require 'trollop'
 
 
 opts = Trollop::options do
-	version "ImgDown v0.2"
+	version "ImgDown v0.2.1"
 	banner <<-EOS
 ImgDown is a script that download images from a given webpage.
 Usage:
@@ -56,7 +56,7 @@ def urlToFilename(url)
 	end
 end
 
-def hostn_extract(uri)
+def getHostname(uri)
 	uri =~ /^(https?:\/\/.*[a-z]+\.[a-z]+)\/?.*$/
 	return "#{$1}"
 end
@@ -74,11 +74,11 @@ def link_sherlock(url, regexp, user_agent) # Search document and substituting lo
 		if "#{link}" =~ /#{regexp}/
 			case link
 			when /^\/[^\/].*\.(jpe?g|png|gif)$/
-				_m_links.push("#{hostn_extract(url)}#{link}")
+				_m_links.push("#{getHostname(url)}#{link}")
 			when /^https?:\/\/.*\.(jpe?g|png|gif)$/
 				_m_links.push("#{link}")
 			when /^[a-zA-Z0-9]+.*\.(jpe?g|png|gif)$/
-				_m_links.push("#{hostn_extract(url)}/#{link}")
+				_m_links.push("#{getHostname(url)}/#{link}")
 			when /^\/\/http:\/\/(.*\.(jpe?g|png|gif))$/	# FIXME: Change the regex to a substitution instead.
 				_m_links.push("http://#{$1}")
             when /^\/\/(?!https?)(.*\.(jpe?g|png|gif))$/
