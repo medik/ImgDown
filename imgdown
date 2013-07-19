@@ -26,8 +26,7 @@ require 'trollop'
 opts = Trollop::options do
 	version "ImgDown v0.2"
 	banner <<-EOS
-ImgDown is a program who download imagefiles from a webpage.
-	
+ImgDown is a script that download images from a given webpage.
 Usage:
 	imgdown [options]
 
@@ -39,7 +38,7 @@ EOS
 	opt :link, "Link to the page that you want to download images from.", :short => 'l', :type => String
 	opt :destination, "The folder you want to download images to.", :short => 't', :type => String, :default => Dir.pwd
 	opt :user_agent, "If you want to set a alternative user-agent", :short => 's', :type => String, :default => "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.4 (KHTML, like Gecko) Chrome/22.0.1229.94 Safari/537.4"
-    opt :overwrite, "If you want to overwrite existing files with the same name", :short => 'ow', :default => false 
+    	opt :overwrite, "If you want to overwrite existing files with the same name", :short => 'i', :default => false 
 end
 
 Trollop::die :link, "must exist" if opts[:link] == "" || opts[:link] == nil
