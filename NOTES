@@ -2,13 +2,13 @@ uri : https://en.wikipedia.org/wiki/Uniform_resource_identifier
 regexp : Regular expression.
 
 Function name  						Description
--------------							-----------
+-------------						-----------
 
-filen_extract(uri)						Extracting a filename from a uri.
-hostn_extract(uri)						Extracting a hostname from a uri.
-link_sherlock(url, regexp, user_agent)	Searching in a html after links that match a given regexp.
-downl_f(file_uri, downl_path)			Downloading a file and write it to a given path.
-downl_all(array_w_links, dwl_path)		Downloading a array with links to a given path.
+urlToFilename(uri)					Extracting a filename from a uri.
+getHostname(uri)					Extracting a hostname from a uri.
+link_sherlock(url, regexp, user_agent)			Searching in a html after links that match a given regexp.
+downl_f(file_uri, downl_path)				Downloading a file and write it to a given path.
+downl_all(array_w_links, dwl_path)			Downloading a array with links to a given path.
 if_doublet(file_n, cmp_a)				Checking a doublet in a directory. (Needs to fix?)
-yesno()									Check whether the user want to do something or not.
+yesno()							Check whether the user want to do something or not.
 
