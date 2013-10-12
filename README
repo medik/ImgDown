@@ -1,0 +1,40 @@
+ImgDown - A image downloader
+----------------------------
+
+When I programmed this program the first time I used this to 
+download multiple images from image bulletin and websites with
+a lot of pictures. The indend remains today and you can use my
+tool to do the same thing - Even if it isn't neccesery pictures
+you're after. 
+
+Instead to make a separate script for every web page structure,
+I wanted to make a general solutions for every webpages. 
+
+Dependency: Ruby w/ gems: trollop and nokogiri
+
+You can install those with "sudo install nokogiri trollop"
+
+Usage
+-----
+
+To get all links and pictures from a webpage, just type:
+./imgdown --link http://link/to/webpage
+
+This works for https links as well.
+./imgdown --link https://link/to/webpage
+
+To specify with regex, type:
+./imgdown --link http://link/to/weboage --reg-ex "catpictures[0-9]+\.jpe?g"
+
+Found a range of picture you want to download? Download with:
+./imgdown --link http://link/to/weboage --reg-ex "catpictures[0-9]+\.jpe?g" --download
+
+You might want to specify location.. 
+./imgdown --link http://link/to/weboage --reg-ex "catpictures[0-9]+\.jpe?g" --download --destination "~/mycatpictures"
+
+The website didn't want you to download your catpictures? Hehehe..
+./imgdown --link http://link/to/weboage --reg-ex "catpictures[0-9]+\.jpe?g" --download --destination "~/mycatpictures" --user-agent "Catfox v.1337"
+
+You're a person who forgets a lot?
+./imgdown --help
+
