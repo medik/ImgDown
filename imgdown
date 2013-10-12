@@ -17,11 +17,17 @@ This is what ImgDown do.
 	- Could show all the links BEFORE downloading them. (YEAAAAH)
 
 """""""
+if Gem::Specification::find_by_name('nokogiri') == false then
+	put "Error! Nokogiri is NOT installed. Install nokogiri and try run imgdown again."
+	exit
+elsif Gem::Specification::find_by_name('trollop') == false then
+	put "Error! Trollop is NOT installed. Install trollop and try imgdown again."
+	exit
+end
 
-require 'nokogiri'
 require 'open-uri'
+require 'nokogiri'
 require 'trollop'
-
 
 opts = Trollop::options do
 	version "ImgDown v0.2.1"
