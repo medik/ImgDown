@@ -69,7 +69,7 @@ end
 
 def link_sherlock(url, regexp, user_agent) # Search document and substituting loose ends
 	_nokogiri_html_img = Nokogiri::HTML(open(url, 'User-Agent' => user_agent)).xpath('.//img/@src').to_a
-	_nokogiri_html_a = Nokogiri::HTML(open(url)).xpath('.//a/@href').to_a
+	_nokogiri_html_a = Nokogiri::HTML(open(url,'User-Agent' => user_agent)).xpath('.//a/@href').to_a
 	
 	_links_array = _nokogiri_html_img + _nokogiri_html_a
 	
@@ -102,24 +102,24 @@ def link_sherlock(url, regexp, user_agent) # Search document and substituting lo
 	return _m_links
 end
 
-def downl_f(file_uri, downl_path)
+def downl_f(file_uri, downl_path, user_agent)
 	puts "Downloading #{file_uri}..."
 	_file_h = open("#{downl_path}/#{urlToFilename(file_uri)}", "wb")
-	_file_h.write(open(file_uri).read)
+	_file_h.write(open(file_uri,'User-Agent' => user_agent).read)
 	_file_h.close
 end
 
 
-def downl_all(array_w_links, dwl_path)
+def downl_all(array_w_links, dwl_path, user_agent)
 	puts "Downloading..."
 
 	f_names = Dir["#{dwl_path}/*"].map { |path| urlToFilename(path) }
 	
 	array_w_links.each do |url|
         if opts[:overwrite] == true then
-            downl_f(url, dwl_path)
+            downl_f(url, dwl_path, user_agent)
         elsif doublet?(urlToFilename(url), f_names) != true then
-			downl_f(url, dwl_path)
+			downl_f(url, dwl_path, user_agent)
 		end
 	end
 end
