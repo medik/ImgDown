@@ -10,12 +10,6 @@ me@olofsjodin.se
 I didn't found any application that did what I wanted it to do, and
 I wanted my own application so I created this. That was how ImgDown
 was born.
-
-This is what ImgDown do.
-	- Getting all <img src='x'> and <a href='x'> (NEW) in a webpage and downloading every single one those you choose with regex.
-	- Sort the links with the help of RegEx.
-	- Could show all the links BEFORE downloading them. (YEAAAAH)
-
 """""""
 if Gem::Specification::find_by_name('nokogiri') == false then
 	put "Error! Nokogiri is NOT installed. Install nokogiri and try run imgdown again."
@@ -43,7 +37,7 @@ EOS
 	opt :reg_ex, "Use this tag to define a regular expression.", :short => 'r', :type => String, :default => "(.*)" # TODO: How does the regex for this program work.
 	opt :link, "Link to the page that you want to download images from.", :short => 'l', :type => String
 	opt :destination, "This defines the folder you want to download images to.", :short => 't', :type => String, :default => Dir.pwd
-	opt :user_agent, "Use this tag if you want to specify a user-agent.", :short => 's', :type => String, :default => "ImgDown v0.2.1"
+	opt :user_agent, "Use this tag if you want to specify a user-agent.", :short => 's', :type => String, :default => "ImgDown v0.2.1.1"
     	opt :overwrite, "If you want to overwrite existing files with the same name", :short => 'i', :default => false
 end
 
@@ -53,7 +47,15 @@ Trollop::die :link, "must exist" if opts[:link] == "" || opts[:link] == nil
 # f_names.push(filen_extract(fname))
 # end
 
-def urlToFilename(url)
+# extractFilename(url)
+# ------------------
+# Extracting filenames
+#
+# Example:
+# http://foo/bar/lols.img => lols.img
+# /foo/bar/lols.img => lols.img
+
+def extractFilename(url)
 	url =~ /^.*\/(.*)\.(.*)$/
 	if url == "" or url == nil then
 		return ""
@@ -62,9 +64,48 @@ def urlToFilename(url)
 	end
 end
 
+# getHostname(uri)
+# ----------------
+#
+# Extracting hostname
+#
+# Example:
+# http://foo.com/bar => http://foo.com
+# https://www.alice.foo/bar => https://www.alice.foo
+
 def getHostname(uri)
 	uri =~ /^(https?:\/\/.*[a-z]+\.[a-z]+)\/?.*$/
 	return "#{$1}"
+end
+
+# doublet?(file_n, dir)
+# ---------------------
+#
+# Checking if a file exists in a directory
+#
+# Example:
+# The Tree
+# /
+# |--foo1
+# |---|---bar1
+# |---|---bar2
+# |--foo2
+# |---|---bar1
+# |---|---bar2
+# 
+# ("bar1", "/foo1") => true
+# ("bar1", "/foo2") => true
+# ("bar3", "/foo1") => false
+
+def doublet?(file_n, dir)
+	f_names = Dir["#{dir}/*"].map { |path| extractFilename(path) }
+	doublet = false
+	f_names.each do |filename|
+		if "#{file_n}" == "#{filename}"
+			doublet = true
+		end
+	end
+	return doublet
 end
 
 def link_sherlock(url, regexp, user_agent) # Search document and substituting loose ends
@@ -99,12 +140,12 @@ def link_sherlock(url, regexp, user_agent) # Search document and substituting lo
 	end
 
 	# Return matches.
-	return _m_links
+	return _m_links.uniq
 end
 
 def downl_f(file_uri, downl_path, user_agent)
 	puts "Downloading #{file_uri}..."
-	_file_h = open("#{downl_path}/#{urlToFilename(file_uri)}", "wb")
+	_file_h = open("#{downl_path}/#{extractFilename(file_uri)}", "wb")
 	_file_h.write(open(file_uri,'User-Agent' => user_agent).read)
 	_file_h.close
 end
@@ -116,30 +157,25 @@ def downl_all(array_w_links, dwl_path, user_agent, ow)
 	if ow == true then
 		puts "Overwrite mode is on, ImgDown will overwrite existing files"
 	end
-
-	f_names = Dir["#{dwl_path}/*"].map { |path| urlToFilename(path) }
 	
 	array_w_links.each do |url|
-		if ow == true then
+		doubl = doublet?(extractFilename(url), dwl_path)
+		if ow or !doubl then
 			downl_f(url, dwl_path, user_agent)
-		elsif doublet?(urlToFilename(url), f_names) != true then
-			downl_f(url, dwl_path, user_agent)
+		elsif doubl then
+			puts "There was already an '#{extractFilename(url)}' in the directory!"
+			puts "Continue?"
+			if yesno() then 
+				downl_f(url, dwl_path, user_agent)
+			else
+				puts "Quiting."
+				exit
+			end
 		end
 	end
 end
 
-def doublet?(file_n, cmp_a)
-	doublet = false
-	cmp_a.each do |link|
-		if "#{file_n}" == "#{link}"
-			doublet = true
-			puts "There was already an '#{file_n}' in the directory!"
-		end
-	end
-	return doublet
-end
-
-def yesno
+def yesno()
     loop do
         begin
               system("stty raw -echo")
@@ -165,6 +201,8 @@ url 		= opts[:link]
 user_agent  	= opts[:user_agent]
 ow		= opts[:overwrite]
 
+puts "Settings:\n download mode: #{downl_mode}\n download path: #{downl_path}\n regex: #{regex}\n user-agent: #{user_agent}\n overwrite: #{ow}"
+
 if downl_mode then
 	downl_all(link_sherlock(url, regex, user_agent), downl_path, user_agent, ow)
 
@@ -175,8 +213,8 @@ elsif !downl_mode then
         links_a.each do |link|
 	    	puts "#{link}"
 	    end
-        puts "Do you want to leech these links to #{downl_path}? [y/n]"
-        dl = yesno
+        puts "Do you want to download these files to #{downl_path}? [y/n]"
+        dl = yesno()
         if dl then
 	        downl_all(link_sherlock(url, regex, user_agent), downl_path, user_agent, ow)
         elsif !dl then
