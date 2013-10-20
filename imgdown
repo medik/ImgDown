@@ -30,7 +30,7 @@ require 'nokogiri'
 require 'trollop'
 
 opts = Trollop::options do
-	version "ImgDown v0.2.1"
+	version "ImgDown v0.2.1.1"
 	banner <<-EOS
 ImgDown is a script that download images from a given webpage.
 Usage:
@@ -44,7 +44,7 @@ EOS
 	opt :link, "Link to the page that you want to download images from.", :short => 'l', :type => String
 	opt :destination, "This defines the folder you want to download images to.", :short => 't', :type => String, :default => Dir.pwd
 	opt :user_agent, "Use this tag if you want to specify a user-agent.", :short => 's', :type => String, :default => "ImgDown v0.2.1"
-    	#opt :overwrite, "If you want to overwrite existing files with the same name", :short => 'i', :default => false  FIXME
+    	opt :overwrite, "If you want to overwrite existing files with the same name", :short => 'i', :default => false
 end
 
 Trollop::die :link, "must exist" if opts[:link] == "" || opts[:link] == nil
@@ -87,8 +87,8 @@ def link_sherlock(url, regexp, user_agent) # Search document and substituting lo
 				_m_links.push("#{getHostname(url)}/#{link}")
 			when /^\/\/http:\/\/(.*\.(jpe?g|png|gif))$/	# FIXME: Change the regex to a substitution instead.
 				_m_links.push("http://#{$1}")
-            when /^\/\/(?!https?)(.*\.(jpe?g|png|gif))$/
-                _m_links.push("http://#{$1}")
+			when /^\/\/(?!https?)(.*\.(jpe?g|png|gif))$/
+				_m_links.push("http://#{$1}")
 			end
 		end
 	end
@@ -110,18 +110,21 @@ def downl_f(file_uri, downl_path, user_agent)
 end
 
 
-def downl_all(array_w_links, dwl_path, user_agent)
+def downl_all(array_w_links, dwl_path, user_agent, ow)
 	puts "Downloading..."
+
+	if ow == true then
+		puts "Overwrite mode is on, ImgDown will overwrite existing files"
+	end
 
 	f_names = Dir["#{dwl_path}/*"].map { |path| urlToFilename(path) }
 	
 	array_w_links.each do |url|
-		#if opts[:overwrite] == true then
-		#	downl_f(url, dwl_path, user_agent)
-		#elsif doublet?(urlToFilename(url), f_names) != true then
-		#	downl_f(url, dwl_path, user_agent)
-		#end FIXME FIXME FIXME
-		downl_f(url, dwl_path, user_agent)
+		if ow == true then
+			downl_f(url, dwl_path, user_agent)
+		elsif doublet?(urlToFilename(url), f_names) != true then
+			downl_f(url, dwl_path, user_agent)
+		end
 	end
 end
 
@@ -160,9 +163,10 @@ downl_path 	= opts[:destination]
 regex 		= opts[:reg_ex]
 url 		= opts[:link]
 user_agent  	= opts[:user_agent]
+ow		= opts[:overwrite]
 
 if downl_mode then
-	downl_all(link_sherlock(url, regex, user_agent), downl_path, user_agent)
+	downl_all(link_sherlock(url, regex, user_agent), downl_path, user_agent, ow)
 
 elsif !downl_mode then
     links_a = link_sherlock(url, regex, user_agent)
@@ -174,9 +178,9 @@ elsif !downl_mode then
         puts "Do you want to leech these links to #{downl_path}? [y/n]"
         dl = yesno
         if dl then
-	        downl_all(link_sherlock(url, regex, user_agent), downl_path, user_agent)
+	        downl_all(link_sherlock(url, regex, user_agent), downl_path, user_agent, ow)
         elsif !dl then
-            puts "Good bye"
+            puts "Bye."
         end
     end
 end
