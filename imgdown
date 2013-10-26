@@ -11,6 +11,7 @@ I didn't found any application that did what I wanted it to do, and
 I wanted my own application so I created this. That was how ImgDown
 was born.
 """""""
+IMGDOWN_VERSION = "Imgdown v0.2.1.2"
 if Gem::Specification::find_by_name('nokogiri') == false then
 	put "Error! Nokogiri is NOT installed. Install nokogiri and try run imgdown again."
 	exit
@@ -25,7 +26,7 @@ require 'nokogiri'
 require 'trollop'
 
 opts = Trollop::options do
-	version "ImgDown v0.2.1.2"
+	version IMGDOWN_VERSION
 	banner <<-EOS
 ImgDown is a script that download images from a given webpage.
 Usage:
@@ -38,8 +39,9 @@ EOS
 	opt :reg_ex, "Use this tag to define a regular expression.", :short => 'r', :type => String, :default => "(.*)" # TODO: How does the regex for this program work.
 	opt :link, "Link to the page that you want to download images from.", :short => 'l', :type => String
 	opt :destination, "This defines the folder you want to download images to.", :short => 't', :type => String, :default => Dir.pwd
-	opt :user_agent, "Use this tag if you want to specify a user-agent.", :short => 's', :type => String, :default => "ImgDown v0.2.1.1"
+	opt :user_agent, "Use this tag if you want to specify a user-agent.", :short => 's', :type => String, :default => IMGDOWN_VERSION
     	opt :overwrite, "If you want to overwrite existing files with the same name", :short => 'i', :default => false
+	opt :extensions, "The fileextensions imgdown will looking for", :short => 'x', :type => :strings, :default => ["jpe?g","png","gif"]
 end
 
 Trollop::die :link, "must exist" if opts[:link] == "" || opts[:link] == nil
@@ -202,9 +204,10 @@ regex 		= opts[:reg_ex]
 url 		= opts[:link]
 user_agent  	= opts[:user_agent]
 ow		= opts[:overwrite]
-file_extension  = "jpe?g|png|gif"
+file_extension  = opts[:extensions].join("|")
 
-puts "Settings:\n download mode: #{downl_mode}\n download path: #{downl_path}\n regex: #{regex}\n user-agent: #{user_agent}\n overwrite: #{ow}"
+puts IMGDOWN_VERSION
+#puts "Settings:\n download mode: #{downl_mode}\n download path: #{downl_path}\n regex: #{regex}\n user-agent: #{user_agent}\n overwrite: #{ow}"
 
 if downl_mode then
 	downl_all(link_sherlock(url, regex, user_agent, file_extension), downl_path, user_agent, ow)
