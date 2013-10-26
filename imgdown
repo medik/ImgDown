@@ -19,12 +19,13 @@ elsif Gem::Specification::find_by_name('trollop') == false then
 	exit
 end
 
+require 'uri'
 require 'open-uri'
 require 'nokogiri'
 require 'trollop'
 
 opts = Trollop::options do
-	version "ImgDown v0.2.1.1"
+	version "ImgDown v0.2.1.2"
 	banner <<-EOS
 ImgDown is a script that download images from a given webpage.
 Usage:
@@ -108,7 +109,7 @@ def doublet?(file_n, dir)
 	return doublet
 end
 
-def link_sherlock(url, regexp, user_agent) # Search document and substituting loose ends
+def link_sherlock(url, regexp, user_agent, fileExt) # Search document and substituting loose ends
 	_nokogiri_html_img = Nokogiri::HTML(open(url, 'User-Agent' => user_agent)).xpath('.//img/@src').to_a
 	_nokogiri_html_a = Nokogiri::HTML(open(url,'User-Agent' => user_agent)).xpath('.//a/@href').to_a
 	
@@ -120,15 +121,15 @@ def link_sherlock(url, regexp, user_agent) # Search document and substituting lo
 	_links_array.each do |link|
 		if "#{link}" =~ /#{regexp}/
 			case link
-			when /^\/[^\/].*\.(jpe?g|png|gif)$/
+			when /^\/[^\/].*\.(#{fileExt})$/
 				_m_links.push("#{getHostname(url)}#{link}")
-			when /^https?:\/\/.*\.(jpe?g|png|gif)$/
+			when /^https?:\/\/.*\.(#{fileExt})$/
 				_m_links.push("#{link}")
-			when /^[a-zA-Z0-9]+.*\.(jpe?g|png|gif)$/
+			when /^[a-zA-Z0-9]+.*\.(#{fileExt})$/
 				_m_links.push("#{getHostname(url)}/#{link}")
-			when /^\/\/http:\/\/(.*\.(jpe?g|png|gif))$/	# FIXME: Change the regex to a substitution instead.
+			when /^\/\/http:\/\/(.*\.(#{fileExt}))$/	# FIXME: Change the regex to a substitution instead.
 				_m_links.push("http://#{$1}")
-			when /^\/\/(?!https?)(.*\.(jpe?g|png|gif))$/
+			when /^\/\/(?!https?)(.*\.(#{fileExt}))$/
 				_m_links.push("http://#{$1}")
 			end
 		end
@@ -144,9 +145,10 @@ def link_sherlock(url, regexp, user_agent) # Search document and substituting lo
 end
 
 def downl_f(file_uri, downl_path, user_agent)
+	uri = URI(URI.parse(URI.encode(file_uri)))
 	puts "Downloading #{file_uri}..."
 	_file_h = open("#{downl_path}/#{extractFilename(file_uri)}", "wb")
-	_file_h.write(open(file_uri,'User-Agent' => user_agent).read)
+	_file_h.write(open(uri.to_s,'User-Agent' => user_agent).read)
 	_file_h.close
 end
 
@@ -163,9 +165,8 @@ def downl_all(array_w_links, dwl_path, user_agent, ow)
 		if ow or !doubl then
 			downl_f(url, dwl_path, user_agent)
 		elsif doubl then
-			puts "There was already an '#{extractFilename(url)}' in the directory!"
 			puts "Continue?"
-			if yesno() then 
+			if yesno("There was already an '#{extractFilename(url)}' in the directory!\n Continue?") then 
 				downl_f(url, dwl_path, user_agent)
 			else
 				puts "Quiting."
@@ -175,23 +176,24 @@ def downl_all(array_w_links, dwl_path, user_agent, ow)
 	end
 end
 
-def yesno()
-    loop do
-        begin
-              system("stty raw -echo")
-              str = STDIN.getc
-        ensure
-              system("stty -raw echo")
-        end
+def yesno(question)
+	puts "#{question} [y/n]"
+	    loop do
+		begin
+		      system("stty raw -echo")
+		      str = STDIN.getc
+		ensure
+		      system("stty -raw echo")
+		end
 
-        if str == "Y" || str == "y"
-            return true
-        elsif str == "N" || str == "n"
-            return false
-        else
-            puts "Please enter [y]es or [n]o."
-        end
-    end
+		if str == "Y" || str == "y"
+		    return true
+		elsif str == "N" || str == "n"
+		    return false
+		else
+		    puts "Please enter [y]es or [n]o."
+		end
+	    end
 end
 
 downl_mode 	= opts[:download]			
@@ -200,23 +202,23 @@ regex 		= opts[:reg_ex]
 url 		= opts[:link]
 user_agent  	= opts[:user_agent]
 ow		= opts[:overwrite]
+file_extension  = "jpe?g|png|gif"
 
 puts "Settings:\n download mode: #{downl_mode}\n download path: #{downl_path}\n regex: #{regex}\n user-agent: #{user_agent}\n overwrite: #{ow}"
 
 if downl_mode then
-	downl_all(link_sherlock(url, regex, user_agent), downl_path, user_agent, ow)
+	downl_all(link_sherlock(url, regex, user_agent, file_extension), downl_path, user_agent, ow)
 
 elsif !downl_mode then
-    links_a = link_sherlock(url, regex, user_agent)
+    links_a = link_sherlock(url, regex, user_agent, file_extension)
 	
     if links_a.count > 0 then 
         links_a.each do |link|
 	    	puts "#{link}"
 	    end
-        puts "Do you want to download these files to #{downl_path}? [y/n]"
-        dl = yesno()
+        dl = yesno("Do you want to download these files to #{downl_path}?")
         if dl then
-	        downl_all(link_sherlock(url, regex, user_agent), downl_path, user_agent, ow)
+	        downl_all(link_sherlock(url, regex, user_agent, file_extension), downl_path, user_agent, ow)
         elsif !dl then
             puts "Bye."
         end
