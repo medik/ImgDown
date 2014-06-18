@@ -12,7 +12,7 @@ I wanted to make a general solutions for every webpages.
 
 Dependency: Ruby w/ gems: trollop and nokogiri
 
-You can install those with "sudo install nokogiri trollop"
+You can install those with "sudo gem install nokogiri trollop"
 
 Usage
 -----
