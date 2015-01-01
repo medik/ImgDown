@@ -2,16 +2,16 @@
 # encoding: utf-8
 
 """""""
-ImageDownloader
+ImgDown
+=======
+A image extractor using regex and a bulk downloader. Written by Olof Sjödin, me@olofsjodin.se
 
-Olof Sjödin
-me@olofsjodin.se
-
-I didn't found any application that did what I wanted it to do, and
-I wanted my own application so I created this. That was how ImgDown
-was born.
+Example usage:
+imgdown --download --link 'http://foo/bar' --reg_ex '.*catpics\.jpe?g'
 """""""
+
 IMGDOWN_VERSION = "Imgdown v0.2.1.3"
+# pss med curb
 if Gem::Specification::find_by_name('nokogiri') == false then
 	put "Error! Nokogiri is NOT installed. Install nokogiri and try run imgdown again."
 	exit
@@ -20,6 +20,7 @@ elsif Gem::Specification::find_by_name('trollop') == false then
 	exit
 end
 
+require 'curb'
 require 'uri'
 require 'open-uri'
 require 'nokogiri'
@@ -28,7 +29,9 @@ require 'trollop'
 opts = Trollop::options do
 	version IMGDOWN_VERSION
 	banner <<-EOS
-ImgDown is a script that download images from a given webpage.
+        
+A image extractor using regex and a bulk downloader. Written by Olof Sjödin, me@olofsjodin.se
+        
 Usage:
 	imgdown [options]
 
@@ -153,8 +156,11 @@ def downl_f(file_uri, downl_path, user_agent)
 	uri = URI(URI.parse(URI.encode(file_uri)))
 	puts "Downloading #{file_uri}..."
 	_file_h = open("#{downl_path}/#{extractFilename(file_uri)}", "wb")
-	_file_h.write(open(uri.to_s,'User-Agent' => user_agent).read)
+	curl = Curl::Easy.new(uri.to_s)
+	curl.perform
+	_file_h.write(curl.body_str)
 	_file_h.close
+
 end
 
 
