@@ -24,6 +24,11 @@ If you want to make a system wide installation then you can run if you want to:
 Usage
 -----
 
+Please consult `imgdown -h` on how to use this program.
+
+Examples
+--------
+
 To get all links and pictures from a webpage, just type:
 `./imgdown --link http://link/to/webpage`
 
@@ -44,4 +49,9 @@ The website didn't want you to download your catpictures? Hehehe..
 
 You're a person who forgets a lot?
 `./imgdown --help`
+
+Licence
+-------
+
+This work is available under GPL v3.
 
