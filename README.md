@@ -1,19 +1,23 @@
-ImgDown - A image downloader
-----------------------------
+ImgDown
+=======
 
-When I programmed this program the first time I used this to 
-download multiple images from image bulletin and websites with
-a lot of pictures. The intend remains today and you can use my
-tool to do the same thing - Even if it isn't neccesery pictures
-you're after. 
+I made this program as a practice to learn ruby. What this program does is to
+recursively search a HTML-document for links and images a extract their source
+and pointer. Then with regular expression you can choose what of those you want
+to download.
 
-Instead to make a separate script for every web page structure,
-I wanted to make a general solutions for every webpages. 
+Installation
+------------
+If you haven't Ruby v1.9.3 installed please install it first. Please consult
+the official documentation on 
+[how to do that](https://www.ruby-lang.org/en/documentation/installation/).
 
-Install
--------
-sudo apt-get install ruby ruby-all-dev ruby-curb
-sudo gem install nokogiri trollop curb
+Clone this repo and then install its dependencies by running this in the
+terminal:
+`sudo gem install -g`
+
+If you want to make a system wide installation then you can run if you want to:
+`cp imgdown /usr/local/bin/`
 
 Usage
 -----
