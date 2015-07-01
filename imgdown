@@ -13,7 +13,7 @@ Usage:
 ./imgdown --download --link 'http://foo/bar' --regex '.*catpics\.jpe?g'
 """""""
 
-IMGDOWN_VERSION = "v0.2.2"
+IMGDOWN_VERSION = "v1.0"
 
 require 'curb'
 require 'uri'
@@ -23,7 +23,7 @@ require 'trollop'
 require 'fileutils'
 
 $opts = Trollop::options do
-	version IMGDOWN_VERSION
+	version "ImgDown #{IMGDOWN_VERSION}"
 	banner <<-EOS
 ImgDown is used as image extractor to recursively download matched pattern.
 The pattern is a regular expression. 
