@@ -14,9 +14,11 @@ the official documentation on
 
 Clone this repo and then install its dependencies by running this in the
 terminal:
+
 ```sudo gem install -g```
 
 If you want to make a system wide installation then you can run if you want to:
+
 ```cp imgdown /usr/local/bin/```
 
 Usage
