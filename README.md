@@ -1,4 +1,3 @@
-<<<<<<< HEAD:README.md
 ImgDown
 =======
 
@@ -15,32 +14,32 @@ the official documentation on
 
 Clone this repo and then install its dependencies by running this in the
 terminal:
-`sudo gem install -g`
+```sudo gem install -g```
 
 If you want to make a system wide installation then you can run if you want to:
-`cp imgdown /usr/local/bin/`
+```cp imgdown /usr/local/bin/```
 
 Usage
 -----
 
 To get all links and pictures from a webpage, just type:
-./imgdown --link http://link/to/webpage
+`./imgdown --link http://link/to/webpage`
 
 This works for https links as well.
-./imgdown --link https://link/to/webpage
+`./imgdown --link https://link/to/webpage`
 
 To specify with regex, type:
-./imgdown --link http://link/to/weboage --reg-ex "catpictures[0-9]+\.jpe?g"
+`./imgdown --link http://link/to/weboage --reg-ex "catpictures[0-9]+\.jpe?g"`
 
 Found a range of picture you want to download? Download with:
-./imgdown --link http://link/to/weboage --reg-ex "catpictures[0-9]+\.jpe?g" --download
+`./imgdown --link http://link/to/weboage --reg-ex "catpictures[0-9]+\.jpe?g" --download`
 
 You might want to specify location.. 
-./imgdown --link http://link/to/weboage --reg-ex "catpictures[0-9]+\.jpe?g" --download --destination "~/mycatpictures"
+`./imgdown --link http://link/to/weboage --reg-ex "catpictures[0-9]+\.jpe?g" --download --destination "~/mycatpictures"`
 
 The website didn't want you to download your catpictures? Hehehe..
-./imgdown --link http://link/to/weboage --reg-ex "catpictures[0-9]+\.jpe?g" --download --destination "~/mycatpictures" --user-agent "Catfox v.1337"
+`./imgdown --link http://link/to/weboage --reg-ex "catpictures[0-9]+\.jpe?g" --download --destination "~/mycatpictures" --user-agent "Catfox v.1337"`
 
 You're a person who forgets a lot?
-./imgdown --help
+`./imgdown --help`
 
