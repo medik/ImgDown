@@ -16,7 +16,9 @@ Clone this repo and then install its dependencies by running this in the
 terminal:
 
 ```git clone https://github.com/medik/ImgDown.git```
+
 ```cd imgdown```
+
 ```sudo gem install -g```
 
 If you want to make a system wide installation then you can run if you want to:
