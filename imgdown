@@ -2,8 +2,9 @@
 # encoding: utf-8
 
 """""""
-ImgDown
-=======
+ImgDown, written by Olof <medik> Sjödin
+Last modified: 2016-05-02
+
 ImgDown is used as image extractor to recursively download matched pattern.
 The pattern is a regular expression. 
 
@@ -50,13 +51,8 @@ end
 
 Trollop::die :link, "must exist" if $opts[:link] == "" || $opts[:link] == nil
 
-# extractFilename(url)
-# --------------------
-# Extracting filenames
-#
-# Example:
-# http://foo/bar/lols.img => lols.img
-# /foo/bar/lols.img => lols.img
+##
+# Parsing a URL and returns the filename and extension
 
 def extractFilename(url)
 	url =~ /^.*\/(.*)\.(.*)$/
@@ -67,46 +63,22 @@ def extractFilename(url)
 	end
 end
 
-# getHostname(uri)
-# ----------------
-#
-# Extracting hostname from a URI. See
-# https://en.wikipedia.org/wiki/Uniform_resource_identifier
-#
-# Example:
-# http://foo.com/bar -> http://foo.com
-# https://www.alice.foo/bar -> https://www.alice.foo
+##
+# Extracts the hostname from a URL
 
 def getHostname(uri)
 	uri =~ /^(https?:\/\/([a-zA-Z0-9]+\.)+[a-zA-Z0-9]+)(\/.*)?$/
 	return "#{$1}"
 end
 
-# doublet?(file, dir)
-# -------------------
-#
+##
 # Checking if a file exists in a directory.
-#
-# Example:
-# The Tree
-# /
-# |--foo1
-# |---|---bar1
-# |---|---bar2
-# |--foo2
-# |---|---bar1
-# |---|---bar2
-# 
-# ("bar1", "/foo1") => true
-# ("bar1", "/foo2") => true
-# ("bar3", "/foo1") => false
-""
+ 
 def doublet?(file, dir)
         return File.exists?("#{dir}/#{file}")
 end
 
-# link_sherlock(url, regexp, user_agent, fileExt)
-# -----------------------------------------------
+##
 # This function searchs a HTML documents after images-urls
 # and links that matches specified regular expression and 
 # file extension.
@@ -153,8 +125,7 @@ def link_sherlock(url, regexp, user_agent, fileExt)
 	return _m_links.uniq
 end
 
-# downl_f(file_uri, downl_path, user_agent)
-# -----------------------------------------
+##
 # Downloads specified file to downl_path. User-agent must be specified.
 
 def downl_f(file_uri, downl_path, user_agent)
@@ -168,9 +139,7 @@ def downl_f(file_uri, downl_path, user_agent)
 
 end
 
-
-# downl_all(array_w_links, dwl_path, user_agent, ow)
-# --------------------------------------------------
+##
 # This function will download multiple files specified in a array of links.
 # It will be downloaded to dwl_path and user-agent must be specifed. That
 # includes if it should overwrite or not.
@@ -203,8 +172,7 @@ def downl_all(array_w_links, dwl_path, user_agent, overwrite)
     end
 end
 
-# yesno(question)
-# ---------------
+##
 # Will ask the user yes or no with a specified question. If user ignore this
 # then it will ask again.
 
@@ -228,8 +196,7 @@ def yesno(question)
     end
 end
 
-# main()
-# ------
+##
 # The main function.
 
 def main()
