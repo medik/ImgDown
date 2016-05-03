@@ -14,7 +14,8 @@ Usage:
 ./imgdown --download --link 'http://foo/bar' --regex '.*catpics\.jpe?g'
 """""""
 
-IMGDOWN_VERSION = "v1.0"
+IMGDOWN_VERSION = "v1.1"
+REGEXDICTIONARY = "regexdict.txt"
 
 require 'curb'
 require 'uri'
@@ -45,11 +46,74 @@ EOS
 	opt :link, "Link to the page that you want to download images from.", :short => 'l', :type => String
 	opt :destination, "This defines the folder you want to download images to.", :short => 't', :type => String, :default => Dir.pwd
 	opt :user_agent, "Use this tag if you want to specify a user-agent.", :short => 's', :type => String, :default => "ImgDown #{IMGDOWN_VERSION}"
-    	opt :overwrite, "If you want to overwrite existing files with the same name", :short => 'i', :default => false
+	opt :choose_user_agent, "Retrieve a list of saved user agents.", :default => false
+    opt :overwrite, "If you want to overwrite existing files with the same name", :short => 'i', :default => false
 	opt :extensions, "The fileextensions imgdown will looking for", :short => 'x', :type => :strings, :default => ["jpe?g","png","gif"]
 end
 
 Trollop::die :link, "must exist" if $opts[:link] == "" || $opts[:link] == nil
+
+##
+# Ask what user-agents to use
+
+def askUAFromUser(userAgents)
+	system("clear")
+
+	loop do
+        begin
+        	i = 0
+      		puts "\nChoose user agent from this list\n"
+    		userAgents.each do |ua|
+				puts "#{i+1} #{ua}"
+				i += 1
+			end
+            system("stty raw -echo")
+            num = Integer(STDIN.getc)
+        ensure
+            system("stty -raw echo")
+        end
+
+        if num > userAgents.length or num <= 0 then
+      		system("clear")
+        	puts "Don't mess with me."
+        else
+        	puts "You choose #{userAgents[num-1]}"
+        	return userAgents[num-1]
+        end
+
+    end
+end
+
+
+##
+# Retrieving saved user-agents from $USER
+
+def getUserAgents(filepath)
+	fh = File.open(filepath)
+	
+	ret = Array.new
+	
+	fh.each do |line|
+		ret.push(line)
+	end
+
+	fh.close()
+	return ret
+end
+
+##
+# Saving user-agent to user-defined
+
+def saveUserAgent(newUserAgents, filepath)
+	fh = File.open(filepath, 'w')
+	fh.truncate(0)
+
+	newUserAgents.each do |ua|
+		fh.write(ua)
+		fh.write("\n")
+	end	
+	fh.close()
+end
 
 ##
 # Parsing a URL and returns the filename and extension
@@ -200,8 +264,16 @@ end
 # The main function.
 
 def main()
+	userAgent = ""
+	if $opts[:choose_user_agent] then
+		savedUAs = getUserAgents(REGEXDICTIONARY)
+		userAgent = askUAFromUser(savedUAs)
+	else
+		userAgent = $opts[:user_agent]
+	end
+
     puts "Will match #{$opts[:regex]} in #{$opts[:link]}..."
-    results = link_sherlock($opts[:link], $opts[:regex], $opts[:user_agent],
+    results = link_sherlock($opts[:link], $opts[:regex], userAgent,
                             $opts[:extensions].join("|"))
 
     if $opts[:downl_mode] then
