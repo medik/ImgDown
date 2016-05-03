@@ -14,7 +14,7 @@ Usage:
 ./imgdown --download --link 'http://foo/bar' --regex '.*catpics\.jpe?g'
 """""""
 
-IMGDOWN_VERSION = "v1.1"
+IMGDOWN_VERSION = "v1.11"
 REGEXDICTIONARY = "regexdict.txt"
 
 require 'curb'
@@ -52,6 +52,13 @@ EOS
 end
 
 Trollop::die :link, "must exist" if $opts[:link] == "" || $opts[:link] == nil
+
+##
+# Check if user agent exist in the list of user-agents
+
+def doesUAexist(userAgentList, ua)
+	return userAgentList.include? ua
+end
 
 ##
 # Ask what user-agents to use
@@ -94,7 +101,7 @@ def getUserAgents(filepath)
 	ret = Array.new
 	
 	fh.each do |line|
-		ret.push(line)
+		ret.push(line.delete!("\n"))
 	end
 
 	fh.close()
@@ -264,12 +271,23 @@ end
 # The main function.
 
 def main()
+	system("clear")
+
 	userAgent = ""
+	savedUAs = getUserAgents(REGEXDICTIONARY)
 	if $opts[:choose_user_agent] then
-		savedUAs = getUserAgents(REGEXDICTIONARY)
 		userAgent = askUAFromUser(savedUAs)
 	else
 		userAgent = $opts[:user_agent]
+		if not doesUAexist(savedUAs, userAgent) then
+			yes = yesno("It seems that the user agent you choose does not exist in our list of user agents, do you want to save it?")
+			if yes then
+				savedUAs.push(userAgent)
+				saveUserAgent(savedUAs, REGEXDICTIONARY)
+				puts "Saved!"
+			end
+
+		end
 	end
 
     puts "Will match #{$opts[:regex]} in #{$opts[:link]}..."
