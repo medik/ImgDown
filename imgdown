@@ -15,7 +15,7 @@ Usage:
 """""""
 
 IMGDOWN_VERSION = "v1.11"
-REGEXDICTIONARY = "regexdict.txt"
+USERAGENT_DICT = "user-agentdict.txt"
 
 require 'curb'
 require 'uri'
@@ -45,8 +45,8 @@ EOS
 	opt :regex, "Use this tag to define a regular expression.", :short => 'r', :type => String, :default => "(.*)" # TODO: How does the regex for this program work.
 	opt :link, "Link to the page that you want to download images from.", :short => 'l', :type => String
 	opt :destination, "This defines the folder you want to download images to.", :short => 't', :type => String, :default => Dir.pwd
-	opt :user_agent, "Use this tag if you want to specify a user-agent.", :short => 's', :type => String, :default => "ImgDown #{IMGDOWN_VERSION}"
-	opt :choose_user_agent, "Retrieve a list of saved user agents.", :default => false
+	opt :userAgent, "Use this tag if you want to specify a user-agent.", :short => 's', :type => String, :default => "ImgDown #{IMGDOWN_VERSION}"
+	opt :choose_userAgent, "Retrieve a list of saved user agents.", :default => false
     opt :overwrite, "If you want to overwrite existing files with the same name", :short => 'i', :default => false
 	opt :extensions, "The fileextensions imgdown will looking for", :short => 'x', :type => :strings, :default => ["jpe?g","png","gif"]
 end
@@ -97,7 +97,6 @@ end
 
 def getUserAgents(filepath)
 	fh = File.open(filepath)
-	
 	ret = Array.new
 	
 	fh.each do |line|
@@ -154,87 +153,87 @@ end
 # and links that matches specified regular expression and 
 # file extension.
 
-def link_sherlock(url, regexp, user_agent, fileExt)
-	_nokogiri_html_img = Nokogiri::HTML(
-            open(url, 'User-Agent' => user_agent)).xpath('.//img/@src').to_a
-	_nokogiri_html_a = Nokogiri::HTML(
-            open(url,'User-Agent' => user_agent)).xpath('.//a/@href').to_a
+def findLinks(url, regExp, userAgent, fileExt)
+	nokogiriHtmlImg = Nokogiri::HTML(
+            open(url, 'User-Agent' => userAgent)).xpath('.//img/@src').to_a
+	nokogiriAHref = Nokogiri::HTML(
+            open(url,'User-Agent' => userAgent)).xpath('.//a/@href').to_a
 	
-	_links_array = _nokogiri_html_img + _nokogiri_html_a
+	arrayOfLinks = nokogiriHtmlImg + nokogiriAHref
 	
-	_m_links = []
+	ret = []
 	
 	# Fixing links
-	_links_array.each do |link|
-		if "#{link}" =~ /#{regexp}/
+	arrayOfLinks.each do |link|
+		if "#{link}" =~ /#{regExp}/
 			case link
 			# /foo/bar/img
 			when /^\/[^\/].*\.(#{fileExt})$/
-				_m_links.push("#{getHostname(url)}#{link}")
+				ret.push("#{getHostname(url)}#{link}")
 			# https?://foo.bar [..] .fileext
 			when /^https?:\/\/.*\.(#{fileExt})$/
-				_m_links.push("#{link}")
+				ret.push("#{link}")
 			# abcd01234/foo [..] .fileext
 			when /^[a-zA-Z0-9]+.*\/.*\.(#{fileExt})$/
-				_m_links.push("#{getHostname(url)}/#{link}")
+				ret.push("#{getHostname(url)}/#{link}")
 			when /^\/\/http:\/\/(.*\.(#{fileExt}))$/
-				_m_links.push("http://#{$1}")
+				ret.push("http://#{$1}")
 			when /^\/\/(?!https?)(.*\.(#{fileExt}))$/
-				_m_links.push("http://#{$1}")
-                        when /.*#{fileExt}$/
-                            _m_links.push("#{url}/#{link}")
+				ret.push("http://#{$1}")
+            when /.*#{fileExt}$/
+               	ret.push("#{url}/#{link}")
 			end
 		end
 	end
 	
 	# No matches.
-	if _m_links.count == 0
+	if	ret.count == 0
 		puts "Zero matches."
 	end
 
 	# Return matches.
-	return _m_links.uniq
+	return	ret.uniq
 end
 
 ##
-# Downloads specified file to downl_path. User-agent must be specified.
+# Downloads specified file to downloadPath. User-agent must be specified.
 
-def downl_f(file_uri, downl_path, user_agent)
-	uri = URI(URI.parse(URI.encode(file_uri)))
-	puts "Downloading #{file_uri} to #{downl_path}/#{extractFilename(file_uri)}..."
-	_file_h = open("#{downl_path}/#{extractFilename(file_uri)}", "wb")
+def downloadFile(URI, downloadPath, userAgent)
+	uri = URI(URI.parse(URI.encode(URI)))
+	puts "Downloading #{URI} to #{downloadPath}/#{extractFilename(URI)}..."
+	fh = open("#{downloadPath}/#{extractFilename(URI)}", "wb")
 	curl = Curl::Easy.new(uri.to_s)
 	curl.perform
-	_file_h.write(curl.body_str)
-	_file_h.close
+	fh.write(curl.body_str)
+	fh.close
 
 end
 
 ##
 # This function will download multiple files specified in a array of links.
-# It will be downloaded to dwl_path and user-agent must be specifed. That
+# It will be downloaded to downloadPath and user-agent must be specifed. That
 # includes if it should overwrite or not.
 
-def downl_all(array_w_links, dwl_path, user_agent, overwrite)
+def downloadMultipleFiles(links, downloadPath, userAgent, overwrite)
     # There should be a check whether the directory exist or not. TODO
-    if not File.directory?(dwl_path) then
+    if not File.directory?(downloadPath) then
         puts "Path is not valid! Trying to create the path."
-        FileUtils::mkdir_p dwl_path
+        FileUtils::mkdir_p downloadPath
     end
     
     if overwrite then
             puts "Overwrite mode is on, ImgDown will overwrite existing files"
     end
     
-    array_w_links.each do |url|
-            doublet_exist = doublet?(extractFilename(url), dwl_path)
-            if overwrite or !doublet_exist then
-                    downl_f(url, dwl_path, user_agent)
-            elsif doublet_exist then
+    links.each do |url|
+            hasDoublet = doublet?(extractFilename(url), downloadPath)
+            if overwrite or !hasDoublet then
+                    downloadFile(url, downloadPath, userAgent)
+            elsif hasDoublet then
                     if yesno("There was already an "\
                                 "'#{extractFilename(url)}' "\
                                 " in the directory!\n Continue?") then 
-                            downl_f(url, dwl_path, user_agent)
+                            downloadFile(url, downloadPath, userAgent)
                     else
                             puts "Quiting."
                             exit
@@ -274,16 +273,16 @@ def main()
 	system("clear")
 
 	userAgent = ""
-	savedUAs = getUserAgents(REGEXDICTIONARY)
-	if $opts[:choose_user_agent] then
+	savedUAs = getUserAgents(USERAGENT_DICT)
+	if $opts[:choose_userAgent] then
 		userAgent = askUAFromUser(savedUAs)
 	else
-		userAgent = $opts[:user_agent]
+		userAgent = $opts[:userAgent]
 		if not doesUAexist(savedUAs, userAgent) then
 			yes = yesno("It seems that the user agent you choose does not exist in our list of user agents, do you want to save it?")
 			if yes then
 				savedUAs.push(userAgent)
-				saveUserAgent(savedUAs, REGEXDICTIONARY)
+				saveUserAgent(savedUAs, USERAGENT_DICT)
 				puts "Saved!"
 			end
 
@@ -291,11 +290,11 @@ def main()
 	end
 
     puts "Will match #{$opts[:regex]} in #{$opts[:link]}..."
-    results = link_sherlock($opts[:link], $opts[:regex], userAgent,
+    results = findLinks($opts[:link], $opts[:regex], userAgent,
                             $opts[:extensions].join("|"))
 
     if $opts[:downl_mode] then
-        downl_all(results, $opts[:destination], $opts[:user_agent],
+        downloadMultipleFiles(results, $opts[:destination], $opts[:userAgent],
                   $opts[:overwrite])
 
     elsif !$opts[:downl_mode] then
@@ -308,7 +307,7 @@ def main()
                     " #{$opts[:destination]}?")
 
             if download then
-                downl_all(results, $opts[:destination], $opts[:user_agent],
+                downloadMultipleFiles(results, $opts[:destination], $opts[:userAgent],
                         $opts[:overwrite])
             end
         end
