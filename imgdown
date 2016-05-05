@@ -14,7 +14,7 @@ Usage:
 ./imgdown --download --link 'http://foo/bar' --regex '.*catpics\.jpe?g'
 """""""
 
-IMGDOWN_VERSION = "v1.11"
+IMGDOWN_VERSION = "v1.2"
 USERAGENT_DICT = "useragent-dict.txt"
 REGEX_DICT = "regex-dict.txt"
 
