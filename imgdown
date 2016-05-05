@@ -47,7 +47,7 @@ EOS
 	opt :destination, "This defines the folder you want to download images to.", :short => 't', :type => String, :default => Dir.pwd
 	opt :userAgent, "Use this tag if you want to specify a user-agent.", :short => 's', :type => String, :default => "ImgDown #{IMGDOWN_VERSION}"
 	opt :choose_userAgent, "Retrieve a list of saved user agents.", :default => false
-    opt :overwrite, "If you want to overwrite existing files with the same name", :short => 'i', :default => false
+    opt :toOverwrite, "If you want to overwrite existing files with the same name", :short => 'i', :default => false
 	opt :extensions, "The fileextensions imgdown will looking for", :short => 'x', :type => :strings, :default => ["jpe?g","png","gif"]
 end
 
@@ -198,12 +198,15 @@ end
 ##
 # Downloads specified file to downloadPath. User-agent must be specified.
 
-def downloadFile(URI, downloadPath, userAgent)
-	uri = URI(URI.parse(URI.encode(URI)))
+def downloadFile(uri, downloadPath, userAgent)
+	uri = URI(URI.parse(URI.encode(uri)))
 	puts "Downloading #{URI} to #{downloadPath}/#{extractFilename(URI)}..."
+	
 	fh = open("#{downloadPath}/#{extractFilename(URI)}", "wb")
+	
 	curl = Curl::Easy.new(uri.to_s)
 	curl.perform
+	
 	fh.write(curl.body_str)
 	fh.close
 
@@ -212,22 +215,22 @@ end
 ##
 # This function will download multiple files specified in a array of links.
 # It will be downloaded to downloadPath and user-agent must be specifed. That
-# includes if it should overwrite or not.
+# includes if it should toOverwrite or not.
 
-def downloadMultipleFiles(links, downloadPath, userAgent, overwrite)
+def downloadMultipleFiles(links, downloadPath, userAgent, toOverwrite)
     # There should be a check whether the directory exist or not. TODO
     if not File.directory?(downloadPath) then
         puts "Path is not valid! Trying to create the path."
         FileUtils::mkdir_p downloadPath
     end
     
-    if overwrite then
-            puts "Overwrite mode is on, ImgDown will overwrite existing files"
+    if toOverwrite then
+            puts "toOverwrite mode is on, ImgDown will toOverwrite existing files"
     end
     
     links.each do |url|
             hasDoublet = doublet?(extractFilename(url), downloadPath)
-            if overwrite or !hasDoublet then
+            if toOverwrite or !hasDoublet then
                     downloadFile(url, downloadPath, userAgent)
             elsif hasDoublet then
                     if yesno("There was already an "\
@@ -295,7 +298,7 @@ def main()
 
     if $opts[:downl_mode] then
         downloadMultipleFiles(results, $opts[:destination], $opts[:userAgent],
-                  $opts[:overwrite])
+                  $opts[:toOverwrite])
 
     elsif !$opts[:downl_mode] then
         if results.count > 0 then 
@@ -308,7 +311,7 @@ def main()
 
             if download then
                 downloadMultipleFiles(results, $opts[:destination], $opts[:userAgent],
-                        $opts[:overwrite])
+                        $opts[:toOverwrite])
             end
         end
     end
